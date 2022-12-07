@@ -47,14 +47,14 @@ require('packer').startup(function(use)
     use 'https://github.com/preservim/tagbar' -- Tagbar for code navigation
     use 'https://github.com/terryma/vim-multiple-cursors' -- CTRL + N for multiple cursors
     -- use {'neoclide/coc.nvim', branch = 'release' } -- Conquer of Completion: Autocomplete w/ language servers
-    
+
     use 'williamboman/mason.nvim'
 
-    use 'neovim/nvim-lspconfig' 
+    use 'neovim/nvim-lspconfig'
     use 'simrat39/rust-tools.nvim'
 
     -- Completion framework:
-    use 'hrsh7th/nvim-cmp' 
+    use 'hrsh7th/nvim-cmp'
 
     -- LSP completion source:
     use 'hrsh7th/cmp-nvim-lsp'
@@ -62,9 +62,9 @@ require('packer').startup(function(use)
     -- Useful completion sources:
     use 'hrsh7th/cmp-nvim-lua'
     use 'hrsh7th/cmp-nvim-lsp-signature-help'
-    use 'hrsh7th/cmp-vsnip'                             
-    use 'hrsh7th/cmp-path'                              
-    use 'hrsh7th/cmp-buffer'                            
+    use 'hrsh7th/cmp-vsnip'
+    use 'hrsh7th/cmp-path'
+    use 'hrsh7th/cmp-buffer'
     use 'hrsh7th/vim-vsnip'
 
     use 'nvim-treesitter/nvim-treesitter'
@@ -119,7 +119,7 @@ rt.setup({
   },
 })
 
--- LSP Diagnostics Options Setup 
+-- LSP Diagnostics Options Setup
 local sign = function(opts)
   vim.fn.sign_define(opts.name, {
     texthl = opts.name,
@@ -161,16 +161,80 @@ autocmd CursorHold * lua vim.diagnostic.open_float(nil, { focusable = false })
 -- updatetime: set updatetime for CursorHold
 vim.opt.completeopt = {'menuone', 'noselect', 'noinsert'}
 vim.opt.shortmess = vim.opt.shortmess + { c = true}
-vim.api.nvim_set_option('updatetime', 300) 
+vim.api.nvim_set_option('updatetime', 300)
 
 -- Fixed column for diagnostics to appear
 -- Show autodiagnostic popup on cursor hover_range
--- Goto previous / next diagnostic warning / error 
--- Show inlay_hints more frequently 
+-- Goto previous / next diagnostic warning / error
+-- Show inlay_hints more frequently
 vim.cmd([[
 set signcolumn=yes
 autocmd CursorHold * lua vim.diagnostic.open_float(nil, { focusable = false })
 ]])
+
+-- ------------------------------------------------
+-- LSP Mappings.
+-- See `:help vim.diagnostic.*` for documentation on any of the below functions
+local opts = { noremap=true, silent=true }
+vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
+vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
+vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
+vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist, opts)
+
+-- Use an on_attach function to only map the following keys
+-- after the language server attaches to the current buffer
+local on_attach = function(client, bufnr)
+  -- Enable completion triggered by <c-x><c-o>
+  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+  -- Mappings.
+  -- See `:help vim.lsp.*` for documentation on any of the below functions
+  local bufopts = { noremap=true, silent=true, buffer=bufnr }
+  vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
+  vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
+  vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
+  vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
+  vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
+  vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
+  vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
+  vim.keymap.set('n', '<space>wl', function()
+    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+  end, bufopts)
+  vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
+  vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
+  vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
+  vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
+  vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
+end
+
+local lsp_flags = {
+  -- This is the default in Nvim 0.7+
+  debounce_text_changes = 150,
+}
+require('lspconfig')['pyright'].setup{
+    on_attach = on_attach,
+    flags = lsp_flags,
+}
+require('lspconfig')['tsserver'].setup{
+    on_attach = on_attach,
+    flags = lsp_flags,
+}
+require('lspconfig')['rust_analyzer'].setup{
+    on_attach = on_attach,
+    flags = lsp_flags,
+    -- Server-specific settings...
+    settings = {
+      ["rust-analyzer"] = {
+            inlayHints = {
+                bindingModeHints = {
+                    enable = true,
+                }
+            }
+        }
+    }
+}
+
+
 
 -- Completion Plugin Setup
 local cmp = require('cmp')
@@ -203,7 +267,7 @@ cmp.setup({
     { name = 'nvim_lsp_signature_help'},            -- display function signatures with current parameter emphasized
     { name = 'nvim_lua', keyword_length = 2},       -- complete neovim's Lua runtime API such vim.lsp.*
     { name = 'buffer', keyword_length = 2 },        -- source current buffer
-    { name = 'vsnip', keyword_length = 2 },         -- nvim-cmp source for vim-vsnip 
+    { name = 'vsnip', keyword_length = 2 },         -- nvim-cmp source for vim-vsnip
     { name = 'calc'},                               -- source for math calculation
   },
   window = {
@@ -225,7 +289,7 @@ cmp.setup({
   },
 })
 
--- Treesitter Plugin Setup 
+-- Treesitter Plugin Setup
 require('nvim-treesitter.configs').setup {
   ensure_installed = { "lua", "rust", "toml" },
   auto_install = true,
@@ -233,7 +297,7 @@ require('nvim-treesitter.configs').setup {
     enable = true,
     additional_vim_regex_highlighting=false,
   },
-  indent = { enable = true }, 
+  indent = { enable = true },
   rainbow = {
     enable = true,
     extended_mode = true,
@@ -241,7 +305,7 @@ require('nvim-treesitter.configs').setup {
   }
 }
 
--- Treesitter folding 
+-- Treesitter folding
 vim.wo.foldmethod = 'expr'
 vim.wo.foldexpr = 'nvim_treesitter#foldexpr()'
 
