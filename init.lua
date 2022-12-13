@@ -42,6 +42,7 @@ require('packer').startup(function(use)
     use 'https://github.com/vim-airline/vim-airline' -- Status bar
     use 'https://github.com/ap/vim-css-color' -- CSS Color Preview
     use 'https://github.com/rafi/awesome-vim-colorschemes' -- Retro Scheme
+    use 'morhetz/gruvbox'
     use 'https://github.com/ryanoasis/vim-devicons' -- Developer Icons
     use 'https://github.com/tc50cal/vim-terminal' -- Vim Terminal
     use 'https://github.com/preservim/tagbar' -- Tagbar for code navigation
@@ -83,7 +84,7 @@ require('packer').startup(function(use)
 end)
 
 vim.opt.background = "dark"
-vim.cmd('colorscheme PaperColor')
+vim.cmd('colorscheme gruvbox')
 
 vim.cmd([[
 set encoding=utf-8
@@ -94,16 +95,16 @@ nnoremap <C-t> :NERDTreeToggle<CR>
 nmap <F8> :TagbarToggle<CR>
 ]])
 
-vim.cmd([[
-" coc Autocomplete
-inoremap <expr> <Tab> pumvisible() ? coc#_select_confirm() : "<Tab>"
+-- vim.cmd([[
+-- " coc Autocomplete
+-- inoremap <expr> <Tab> pumvisible() ? coc#_select_confirm() : "<Tab>"
 
-" coc goto code nav
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
-]])
+-- " coc goto code nav
+-- nmap <silent> gd <Plug>(coc-definition)
+-- nmap <silent> gy <Plug>(coc-type-definition)
+-- nmap <silent> gi <Plug>(coc-implementation)
+-- nmap <silent> gr <Plug>(coc-references)
+-- ]])
 
 require("mason").setup()
 
